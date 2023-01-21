@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void testa_parametros(int argc)
 {
@@ -19,36 +20,115 @@ void testa_abertura(FILE *fp, const char *path, const char *mode)
     }
 }
 
-void processa(char aux[3][3])
+int verifica_jogo(char jogo[3][3], char p)
 {
+    for (int i = 0; i < 3; i++)
+    {
+        if ((jogo[i][0] == p) && (jogo[i][1] == p) && (jogo[i][2] == p))
+        {
+            return 1;
+        }
+
+        else if ((jogo[0][i] == p) && (jogo[1][i] == p) && (jogo[2][i] == p))
+        {
+            return 1;
+        }
+    }
+
+    if ((jogo[0][0] == p) && (jogo[1][1] == p) && (jogo[2][2] == p)) 
+    {
+        return 1;
+    }
+
+    else if ((jogo[0][2] == p) && (jogo[1][1] == p) && (jogo[2][0] == p)) 
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+void imprime(char jogo[3][3])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        printf("\n");
+        for (int j = 0; j < 3; j++)
+        {
+           printf("%c", jogo[i][j]);
+        }
+        printf("\n");
+    }
+    
+}
+
+void processa(char jogo[3][3], char p, FILE *arq)
+{
+    
+    char jogocp[3][3];
+
+    if(verifica_jogo(jogo,'X'))
+    {
+        return;
+    }
+
+    if(verifica_jogo(jogo,'O'))
+    {
+        imprime(jogo);
+        return;
+    }
+
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
         {
-            if (aux[i][j] == 'B')
+            jogocp[i][j] = jogo[i][j];
+        }
+        
+    }
+    
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (jogo[i][j] == 'B')
             {
-                aux[i][j] = 'O';
-            } 
-        } 
+                jogocp[i][j] = p;
+            }
+            else if(p == 'O')
+            {
+                processa(jogocp,'X',arq);
+                jogocp[i][j] = 'B';
+            }
+            else
+            {
+                processa(jogocp,'O',arq);
+                jogocp[i][j] = 'B';
+            }
+        }
     }
 }
 
 void le_file(FILE *arq1, FILE *arq2)
 {
-    char aux[3][3];
+    char jogo[3][3];
+    char aux[3];
     for (int i = 0; i < 3; i++)
     {
-        fscanf(arq1,"%s",aux[i]);
+        fscanf(arq1, "%s", aux);
+        strcpy(jogo[i], aux);
     }
-    processa(aux[3][3]);
+    processa(jogo, '0', arq2);
 }
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     testa_parametros(argc);
     FILE *arq1 = fopen(argv[1], "r");
     FILE *arq2 = fopen(argv[2], "w");
     testa_abertura(arq1, argv[1], "r");
-    le_file(arq1,arq2);
+    le_file(arq1, arq2);
+    fclose(arq1);
+    fclose(arq2);
     return 0;
 }
